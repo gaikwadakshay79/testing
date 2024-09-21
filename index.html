@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geolocation with OpenStreetMap</title>
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  
+  <style>
+    #map {
+      height: 500px;
+      width: 100%;
+    }
+    body {
+      font-family: Arial, sans-serif;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Track My Location</h1>
+  <p id="status">Waiting for location...</p>
+  <div id="map"></div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+  <script>
+    // Initialize the map
+    const map = L.map('map').setView([51.505, -0.09], 13); // Default to a random location
+
+    // Add OpenStreetMap tiles to the map
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Marker to show the user's current location
+    let marker;
+
+    // Success callback for geolocation
+    function success(position) {
+      const latitude = position.coords.latitude;
+      const longitude = position.coords.longitude;
+      const accuracy = position.coords.accuracy;
+
+      document.getElementById('status').textContent = `Latitude: ${latitude}, Longitude: ${longitude}, Accuracy: ${accuracy} meters`;
+
+      // Set map view to current location
+      map.setView([latitude, longitude], 13);
+
+      // If marker already exists, update its position
+      if (marker) {
+        marker.setLatLng([latitude, longitude]);
+      } else {
+        // Create a marker if it doesn't exist yet
+        marker = L.marker([latitude, longitude]).addTo(map)
+          .bindPopup('You are here!')
+          .openPopup();
+      }
+    }
+
+    // Error callback for geolocation
+    function error(err) {
+      console.warn(`ERROR(${err.code}): ${err.message}`);
+      document.getElementById('status').textContent = `Error: ${err.message}`;
+    }
+
+    // Watch the user's location
+    if (navigator.geolocation) {
+      navigator.geolocation.watchPosition(success, error, {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
+      });
+    } else {
+      document.getElementById('status').textContent = "Geolocation is not supported by your browser.";
+    }
+  </script>
+
+</body>
+</html>
