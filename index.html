@@ -29,15 +29,15 @@
 
   <script>
     // Initialize the map
-    const map = L.map('map').setView([51.505, -0.09], 13); // Default to a random location
+    const map = L.map('map').setView([51.505, -0.09], 13); // Default view
 
     // Add OpenStreetMap tiles to the map
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    // Marker to show the user's current location
-    let marker;
+    // Marker and circle to show the user's current location
+    let marker, accuracyCircle;
 
     // Success callback for geolocation
     function success(position) {
@@ -48,17 +48,31 @@
       document.getElementById('status').textContent = `Latitude: ${latitude}, Longitude: ${longitude}, Accuracy: ${accuracy} meters`;
 
       // Set map view to current location
-      map.setView([latitude, longitude], 13);
+      map.setView([latitude, longitude]);
 
-      // If marker already exists, update its position
+      // If marker already exists, update its position, else create a new one
       if (marker) {
         marker.setLatLng([latitude, longitude]);
       } else {
-        // Create a marker if it doesn't exist yet
-        marker = L.marker([latitude, longitude]).addTo(map)
-          .bindPopup('You are here!')
-          .openPopup();
+        marker = L.marker([latitude, longitude]).addTo(map).bindPopup('You are here!').openPopup();
       }
+
+      // If accuracy circle exists, update its position and radius
+      if (accuracyCircle) {
+        accuracyCircle.setLatLng([latitude, longitude]);
+        accuracyCircle.setRadius(accuracy / 2); // Show only 50% of the accuracy circle
+      } else {
+        // Create an accuracy circle
+        accuracyCircle = L.circle([latitude, longitude], {
+          radius: accuracy / 2, // 50% of the accuracy radius
+          color: 'blue',
+          fillColor: '#aaf',
+          fillOpacity: 0.5
+        }).addTo(map);
+      }
+
+      // Adjust the zoom level to fit 50% of the accuracy circle
+      map.fitBounds(accuracyCircle.getBounds(), { padding: [10, 10] });
     }
 
     // Error callback for geolocation
