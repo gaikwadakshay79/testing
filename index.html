@@ -84,7 +84,7 @@
       const accuracy = position.coords.accuracy;
       const loginTime = getCurrentTime();
 
-      document.getElementById('status').textContent = `Latitude: ${latitude}, Longitude: ${longitude}, Accuracy: ${accuracy} meters`;
+      document.getElementById('status').textContent = `Latitude: ${latitude}, Longitude: ${longitude}, Accuracy: ${accuracy} meters ${JSON.stringify(position)}`;
 
       // Set map view to current location
       map.setView([latitude, longitude]);
