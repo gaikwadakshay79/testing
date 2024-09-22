@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selfie Capture</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+        video, canvas {
+            display: block;
+            margin-bottom: 20px;
+        }
+        #capture, #startCamera {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        #message {
+            color: red;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Take a Selfie</h1>
+    <p id="message">Please grant permission to use your camera.</p>
+    <video id="video" autoplay playsinline width="320" height="240" style="display:none;"></video>
+    <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
+    <button id="startCamera">Start Camera</button>
+    <button id="capture" style="display:none;">Capture Selfie</button>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const startCameraButton = document.getElementById('startCamera');
+        const captureButton = document.getElementById('capture');
+        const message = document.getElementById('message');
+        const context = canvas.getContext('2d');
+
+        // Start the camera when the user clicks 'Start Camera'
+        startCameraButton.addEventListener('click', () => {
+            function getConnectedDevices(type, callback) {
+    navigator.mediaDevices.enumerateDevices()
+        .then(devices => {
+            // const filtered = devices.filter(device => device.kind === type);
+            callback(devices);
+        });
+}
+
+getConnectedDevices('videoinput', cameras => message.textContent= 'Cameras found' + cameras.length);
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
+                .then(stream => {
+                    video.srcObject = stream;
+                    video.style.display = 'block';
+                    startCameraButton.style.display = 'none'; // Hide start camera button
+                    captureButton.style.display = 'inline-block'; // Show capture button
+                    message.textContent = ''; // Clear any messages
+                })
+                .catch(err => {
+                    message.textContent = 'Error: Unable to access camera. Please check permissions.';
+                    console.error('Error accessing camera:', err);
+                });
+        });
+
+        // Capture the selfie and display it on the canvas
+        captureButton.addEventListener('click', () => {
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            canvas.style.display = 'block';
+            video.style.display = 'none';
+            captureButton.style.display = 'none'; // Hide capture button after the selfie is taken
+        });
+    </script>
+</body>
+</html>
